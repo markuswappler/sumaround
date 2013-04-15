@@ -1,4 +1,4 @@
-euwe
+Euwe
 ====
 
-Tournament Management
+Port to the JVM. This time written in Clojure.
