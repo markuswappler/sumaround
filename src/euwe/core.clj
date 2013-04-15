@@ -9,20 +9,24 @@
   each player."
   [n k]
   (if (even? n)
-    (let [n-1 (dec n)]
+    (let [n-1 (dec n)
+          opponent (fn [p]
+                     (let [opp (mod (- k p) n-1)]
+                       (if (= p opp)
+                         n-1
+                         opp)))
+          correct-order? (fn [p1 p2]
+                           (or
+                             (and (= n-1 p2) 
+                                  (> (quot n 2) p1))
+                             (and (not= n-1 p2) 
+                                  (odd? (+ p1 p2)))))]
       (->> (range n-1)
-        (map (fn [p] 
-               (let [opp (mod (- k p) n-1)]
-                 (if (= p opp)
-                   [p n-1]
-                   [p opp]))))
+        (map (fn [p] [p (opponent p)]))
         (filter (fn [[p1 p2]] (< p1 p2)))
-        (map (fn [[p1 p2]]
-               (if (or                   
-                     (and (not= n-1 p2) (odd? (+ p1 p2)))
-                     (and (= n-1 p2) (> (quot n 2) p1)))
-                 [p1 p2]
-                 [p2 p1])))))
+        (map (fn [[p1 p2]] (if (correct-order? p1 p2) 
+                             [p1 p2] 
+                             [p2 p1])))))
     (->> (rr (inc n) k)
       (filter (fn [[p1 p2]] (and (not= n p1) (not= n p2)))))))
       
