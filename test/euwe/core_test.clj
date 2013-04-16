@@ -2,8 +2,57 @@
   (:use clojure.test
         euwe.core))
 
+(defdraw draw-test-1 [players games]
+  [[(players 0) (players 1)]
+   [(players 2) (players 3)]])
+
+(defdraw draw-test-2 [_ games]
+  [(reduce + games) 42 4711])
+
+(defdraw draw-test-3 
+  "This is a docstring."
+  [players games]
+  nil)
+
+(deftest test-defdraw
+  (testing "draw-test-1"
+           (let [players ["Anton" "Berta" "Caesar" "Dora"]
+                 new-games [["Anton" "Berta"] 
+                            ["Caesar" "Dora"]]]
+             (is (= {:players players
+                     :games new-games}
+                    (draw-test-1 {:players players})))
+             (is (= {:players players
+                     :games new-games}
+                    (draw-test-1 {:players players
+                                  :games nil})))
+             (is (= {:players players
+                     :games new-games}
+                    (draw-test-1 {:players players
+                                  :games []})))
+             (is (= {:players players
+                     :games (concat [["Anton" "Caesar"]] new-games)}
+                    (draw-test-1 {:players players
+                                  :games [["Anton" "Caesar"]]})))))
+  (testing "draw-test-2"
+           (let [players ["A" "B" "C" "D"]]
+             (is (= {:players players
+                     :games [1 2 3 4 10 42 4711]}
+                    (draw-test-2 {:players players
+                                  :games [1 2 3 4]})))))
+  (testing "draw-test-3"
+           (let [data {:players ["A" "B" "C" "D"]
+                       :games [["A" "B"] ["C" "D"]]}]
+             (is (= data (draw-test-3 data))))))
+
 (deftest test-round-robin
-  (let [rr (fn [n] (set (round-robin (range 1 (inc n)))))]
+  (let [rr (fn [n]
+             (->> {:players (range 1 (inc n))}
+               round-robin
+               :games
+               (map (fn [{:keys [player-1 player-2]}] 
+                      [player-1 player-2]))
+               set))]
     (is (= #{} 
            (rr 1)))
     (is (= #{[1 2]} 
