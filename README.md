@@ -1,6 +1,20 @@
 # Euwe
 
-New version, running at the JVM, now.
+The goal is to grow a library for tournament management.
+Since this is a pet project, there is no schedule nor
+concrete spec.
+
+The idea is to create primitives for drawing lots, scoring
+games, and sorting players - all operating on the same data
+type, a map with entries for players and games. Thus, making
+these primitives composable, and hopefully yielding an easy
+DSL for defining tournaments.
+
+## Name
+The library is named after [Max Euwe][euwe] a mathematician
+and former world chess champion.
+
+[euwe]: http://en.wikipedia.org/wiki/Max_Euwe "Wikipedia"
 
 ## License
 
