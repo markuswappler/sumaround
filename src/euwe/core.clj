@@ -5,7 +5,20 @@
    :player-2 p2})
 
 (defmacro defdraw
-  "fixme: create docstring"
+  "Macro for defining a function that appends
+  new games to the existing sequence of games.
+  Syntax: (defdraw fn-name [pkey gkey] body)
+  The function takes a map with entries
+  {:pkey seq-players} for players and
+  {:gkey seq-games} for games. These will be
+  unwrapped and bound to pkey and gkey. The
+  return value is expected to be a sequence 
+  of games and will be wrapped/appended to 
+  {:gkey seq-games}. pkey is optional if the 
+  information about players is not needed. 
+  Use _ to make this explicit. gkey is needed 
+  for defining the key where the produced 
+  games shall be stored."
   [name & decl]
   (let [[name-doc args body] 
         (if (string? (first decl))
