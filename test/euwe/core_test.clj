@@ -17,8 +17,7 @@
 (deftest test-defdraw
   (testing "draw-test-1"
            (let [players ["Anton" "Berta" "Caesar" "Dora"]
-                 new-games [["Anton" "Berta"] 
-                            ["Caesar" "Dora"]]]
+                 new-games [["Anton" "Berta"] ["Caesar" "Dora"]]]
              (is (= {:players players
                      :games new-games}
                     (draw-test-1 {:players players})))
@@ -92,4 +91,29 @@
              [3 8] [4 2] [5 1] [6 7]
              [8 7] [1 6] [2 5] [3 4]
              [4 8] [5 3] [6 2] [7 1]}
-           (rr 8)))))  
+           (rr 8)))))
+
+(deftest test-second-leg
+  (let [games-1 [(make-game 1 2)]
+        games-2 [(make-game 2 3)
+                 (make-game 1 4)]
+        games-3 [(make-game 1 2)
+                 (make-game 1 3)
+                 (make-game 1 4)]]
+    (is (= {:games []} (second-leg {})))
+    (is (= {:games []} (second-leg {:games nil})))
+    (is (= {:games []} (second-leg {:games []})))
+    (is (= {:games (concat games-1 
+                           [(make-game 2 1)])}
+           (second-leg {:games games-1})))
+    (is (= {:games (concat games-2
+                           [(make-game 3 2)
+                            (make-game 4 1)])}
+           (second-leg {:games games-2})))
+    (is (= {:games (concat games-3
+                           [(make-game 2 1)
+                            (make-game 3 1)
+                            (make-game 4 1)])}
+           (second-leg {:games games-3})))))
+
+

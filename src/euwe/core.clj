@@ -1,5 +1,9 @@
 (ns euwe.core)
 
+(defn make-game [p1 p2]
+  {:player-1 p1
+   :player-2 p2})
+
 (defmacro defdraw
   "fixme: create docstring"
   [name & decl]
@@ -61,5 +65,14 @@
     (->> (range rounds-cnt)
       (mapcat (partial rr players-cnt))
       (map (fn [[p1 p2]] 
-             {:player-1 (nth players p1) 
-              :player-2 (nth players p2)})))))
+             (make-game (nth players p1) (nth players p2)))))))
+
+(defdraw second-leg
+  "Repeats all games with swapped roles of
+  players."
+  [_ games]
+  (->> games
+    (map (fn [game] 
+           (make-game (game :player-2) (game :player-1))))))
+
+
