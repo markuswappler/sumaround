@@ -87,5 +87,3 @@
   (->> games
     (map (fn [game] 
            (make-game (game :player-2) (game :player-1))))))
-
-
