@@ -34,6 +34,9 @@
     (when else
       (apply rec else))))
 
+(defop eq? [f g]
+  (= f g))
+
 (defop >> [f g]
   (> f g))
 
@@ -56,14 +59,18 @@
 
 (def ger "Germany")
 (def arg "Argentina")
+(def ita "Italy")
+
 (def wch86 {:home "Germany"
             :away "Argentina"
             :home-goals 2
             :away-goals 3})
+
 (def wch90 {:home "Germany"
             :away "Argentina"
             :home-goals 1
             :away-goals 0})
+
 (def confed {:home "Germany"
              :away "Argentina"
              :home-goals 2
@@ -76,6 +83,7 @@
                                       (game-score :home-goals))))
 
 (def points (choice
+              (eq? goals-diff (always nil)) (always nil)
               (>> goals-diff (always 0)) (always 3)
               (<< goals-diff (always 0)) (always 0)
               (always true) (always 1)))
