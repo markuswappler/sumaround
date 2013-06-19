@@ -6,6 +6,11 @@
   (fn [player game]
     x))
 
+(def zero (always 0))
+(def one (always 1))
+(def two (always 2))
+(def three (always 3))
+
 (defn game-score [f]
   (fn [player game]
     (f game)))
@@ -16,7 +21,7 @@
 
 ;; combinators
 
-(defmacro defop [name scores body]
+(defmacro defoperation [name scores body]
   (let [player (gensym "player")
         game (gensym "game")]
     `(defn ~name ~scores
@@ -28,32 +33,28 @@
                        ((apply ~name scores#) ~player ~game))]
            ~body)))))
 
-(defop choice [test then & else]
+(defoperation choice [test then & else]
   (if test
     then
     (when else
       (apply rec else))))
 
-(defop eq? [f g]
-  (= f g))
+(defmacro defbinary [name op]
+  `(defop ~name [f# g#]
+     (when-let [x# f#]
+       (when-let [y# g#]
+         (~op x# y#)))))
 
-(defop >> [f g]
-  (> f g))
-
-(defop << [f g]
-  (< f g))
-
-(defop ++ [f g]
-  (+ f g))
-
-(defop -- [f g]
-  (- f g))
-
-(defop mult [f g]
-  (* f g))
-
-(defop div [f g]
-  (/ f g))
+(defbinary and? and)
+(defbinary or? or)
+(defbinary eq? =)
+(defbinary neq? not=)
+(defbinary less? <)
+(defbinary greater? >)
+(defbinary add +)
+(defbinary sub -)
+(defbinary mult *)
+(defbinary div /)
 
 (defn fold [f init score]
   (fn [player games]
@@ -90,16 +91,22 @@
 
 (def games [wch86 wch90 wch10 confed])
 
-(def goals-diff (choice
-                  (player? :home) (-- (game-score :home-goals)
-                                      (game-score :away-goals))
-                  (player? :away) (-- (game-score :away-goals)
-                                      (game-score :home-goals))))
+(def goals-scored (choice
+                    (player? :home) (game-score :home-goals)
+                    (player? :away) (game-score :away-goals)))
 
-(def points (choice
-              (eq? goals-diff (always nil)) (always nil)
-              (>> goals-diff (always 0)) (always 3)
-              (<< goals-diff (always 0)) (always 0)
-              (always true) (always 1)))
+(def goals-against (choice
+                     (player? :home) (game-score :away-goals)
+                     (player? :away) (game-score :home-goals)))
 
-(def total (fold + 0 points))
+(def points 
+  (let [diff (sub goals-scored goals-against)]
+    (choice
+      (greater? diff zero) three
+      (less? diff zero) zero
+      (eq? diff zero) one)))
+
+(def points-total (fold + 0 points))
+(def goals-scored-total (fold + 0 goals-scored))
+(def goals-against-total (fold + 0 goals-against))
+(def diff-total (sub goals-scored-total goals-against-total))
