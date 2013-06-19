@@ -40,7 +40,7 @@
       (apply rec else))))
 
 (defmacro defbinary [name op]
-  `(defop ~name [f# g#]
+  `(defoperation ~name [f# g#]
      (when-let [x# f#]
        (when-let [y# g#]
          (~op x# y#)))))
@@ -49,8 +49,8 @@
 (defbinary or? or)
 (defbinary eq? =)
 (defbinary neq? not=)
-(defbinary less? <)
-(defbinary greater? >)
+(defbinary lt? <)
+(defbinary gt? >)
 (defbinary add +)
 (defbinary sub -)
 (defbinary mult *)
@@ -102,9 +102,9 @@
 (def points 
   (let [diff (sub goals-scored goals-against)]
     (choice
-      (greater? diff zero) three
-      (less? diff zero) zero
-      (eq? diff zero) one)))
+      (gt? diff zero) three
+      (eq? diff zero) one
+      (lt? diff zero) zero)))
 
 (def points-total (fold + 0 points))
 (def goals-scored-total (fold + 0 goals-scored))
