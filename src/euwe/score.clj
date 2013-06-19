@@ -22,10 +22,10 @@
     `(defn ~name ~scores
        (fn [~player ~game]
          (let [~@(->> scores
-                   (take-while (fn [scr] (not= scr (symbol "&"))))
-                   (mapcat (fn [scr] `(~scr (~scr ~player ~game)))))
-               ~(symbol "rec") (fn [& scores#] 
-                                 ((apply ~name scores#) ~player ~game))]
+                   (take-while (fn [s] (not= s '&)))
+                   (mapcat (fn [s] `(~s (~s ~player ~game)))))
+               ~'rec (fn [& scores#] 
+                       ((apply ~name scores#) ~player ~game))]
            ~body)))))
 
 (defop choice [test then & else]
@@ -55,11 +55,18 @@
 (defop div [f g]
   (/ f g))
 
+(defn fold [f init score]
+  (fn [player games]
+    (->> games
+      (map (fn [g] (score player g)))
+      (filter (comp not nil?))
+      (reduce f init))))
+
 ;; sample
 
 (def ger "Germany")
 (def arg "Argentina")
-(def ita "Italy")
+(def esp "Spain")
 
 (def wch86 {:home "Germany"
             :away "Argentina"
@@ -76,6 +83,13 @@
              :home-goals 2
              :away-goals 2})
 
+(def wch10 {:home "Spain"
+            :away "Germany"
+            :home-goals 1
+            :away-goals 0})
+
+(def games [wch86 wch90 wch10 confed])
+
 (def goals-diff (choice
                   (player? :home) (-- (game-score :home-goals)
                                       (game-score :away-goals))
@@ -87,3 +101,5 @@
               (>> goals-diff (always 0)) (always 3)
               (<< goals-diff (always 0)) (always 0)
               (always true) (always 1)))
+
+(def total (fold + 0 points))
