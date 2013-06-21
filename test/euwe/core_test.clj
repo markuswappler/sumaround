@@ -115,5 +115,3 @@
                             (make-game 3 1)
                             (make-game 4 1)])}
            (second-leg {:games games-3})))))
-
-

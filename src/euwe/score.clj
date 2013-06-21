@@ -63,50 +63,5 @@
       (filter (comp not nil?))
       (reduce f init))))
 
-;; sample
-
-(def ger "Germany")
-(def arg "Argentina")
-(def esp "Spain")
-
-(def wch86 {:home "Germany"
-            :away "Argentina"
-            :home-goals 2
-            :away-goals 3})
-
-(def wch90 {:home "Germany"
-            :away "Argentina"
-            :home-goals 1
-            :away-goals 0})
-
-(def confed {:home "Germany"
-             :away "Argentina"
-             :home-goals 2
-             :away-goals 2})
-
-(def wch10 {:home "Spain"
-            :away "Germany"
-            :home-goals 1
-            :away-goals 0})
-
-(def games [wch86 wch90 wch10 confed])
-
-(def goals-scored (choice
-                    (player? :home) (game-score :home-goals)
-                    (player? :away) (game-score :away-goals)))
-
-(def goals-against (choice
-                     (player? :home) (game-score :away-goals)
-                     (player? :away) (game-score :home-goals)))
-
-(def points 
-  (let [diff (sub goals-scored goals-against)]
-    (choice
-      (gt? diff zero) three
-      (eq? diff zero) one
-      (lt? diff zero) zero)))
-
-(def points-total (fold + 0 points))
-(def goals-scored-total (fold + 0 goals-scored))
-(def goals-against-total (fold + 0 goals-against))
-(def diff-total (sub goals-scored-total goals-against-total))
+(defn sum-up [score]
+  (fold + 0 score))
