@@ -1,6 +1,7 @@
-(ns euwe.hastings3031
+(ns euwe.hastings3031  
   (:use clojure.test 
-        euwe.score))
+        euwe.score)
+  (:require [clojure.math.numeric-tower :as num]))
 
 ;; 11th Hastings Christmas Chess Festival 1930/31
 
@@ -61,20 +62,38 @@
             {:white "Tylor" :black "Sultan Khan" :result :=}
             {:white "Yates" :black "Winter" :result :1}])
 
+(def white-win? (choice (eq? (game-score :result) (always :1)) yes))
+(def draw? (choice (eq? (game-score :result) (always :=)) yes))
+(def black-win? (choice (eq? (game-score :result) (always :0)) yes))
+
 (def points (sum-up
               (choice
-                (player? :white)
-                (choice (eq? (game-score :result) (always :1)) one
-                        (eq? (game-score :result) (always :=)) half
-                        (eq? (game-score :result) (always :0)) zero)
-                (player? :black)
-                (choice (eq? (game-score :result) (always :1)) zero
-                        (eq? (game-score :result) (always :=)) half
-                        (eq? (game-score :result) (always :0)) one))))
+                (player? :white) (choice white-win? one
+                                         draw? half
+                                         black-win? zero)
+                (player? :black) (choice white-win? zero
+                                         draw? half
+                                         black-win? one))))
+
+(def white-wins (sum-up (choice white-win? one)))
+(def draws (sum-up (choice draw? one))) 
+(def black-wins (sum-up (choice black-win? one)))
+
+(def white-success (mult (always 100)  
+                         (div 
+                           (add white-wins (mult half draws))               
+                           (add (add white-wins draws) black-wins))))
 
 (defn make-table [players games]
   (for [p players]
     [p (double (points p games))]))
+
+(defn make-statistics [games]
+  (let [round (fn [x] (/ (num/round (* 10 x)) 10))]
+    [(white-wins nil games) 
+     (draws nil games) 
+     (black-wins nil games) 
+     (double (round (white-success nil games)))]))
 
 (deftest test-table
   (is (= [["Euwe" 7.0] 
@@ -88,3 +107,6 @@
           ["Menchik" 3.0]
           ["Colle" 2.5]]
          (make-table players games))))
+
+(deftest test-statistics
+  (is (= [20 13 12 58.9] (make-statistics games))))

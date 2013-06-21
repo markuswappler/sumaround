@@ -6,6 +6,9 @@
   (fn [player game]
     x))
 
+(def yes (always true))
+(def no (always false))
+
 (def zero (always 0))
 (def one (always 1))
 (def two (always 2))
