@@ -10,6 +10,7 @@
 (def one (always 1))
 (def two (always 2))
 (def three (always 3))
+(def half (always 1/2))
 
 (defn game-score [f]
   (fn [player game]
