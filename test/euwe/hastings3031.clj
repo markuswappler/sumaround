@@ -77,14 +77,14 @@
                                        black-win? one)))]
   [player (double points)])
 
-(deftable statistics [_]
+(deftable statistics []
   [white-wins (sum-up (choice white-win? one))
    draws (sum-up (choice draw? one))
    black-wins (sum-up (choice black-win? one))
    white-success (mult (always 100)  
-                         (div 
-                           (add white-wins (mult half draws))               
-                           (add (add white-wins draws) black-wins)))]
+                       (div 
+                         (add white-wins (mult half draws))               
+                         (add (add white-wins draws) black-wins)))]
   (let [round (fn [x] (/ (num/round (* 10 x)) 10))]
     {:1 white-wins 
      := draws 
@@ -107,6 +107,6 @@
 (deftest test-statistics
   (is (= {:1 20 
           := 13 
-          :0 12 
+          :0 12
           :% 58.9}
-         (first (statistics [:dummy] games)))))
+         (statistics games))))
