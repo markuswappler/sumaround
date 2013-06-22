@@ -69,3 +69,15 @@
 
 (defn sum-up [score]
   (fold + 0 score))
+
+(defmacro deftable [name [playersymb] bindings body]
+  (let [players (gensym "players")
+        games (gensym "games")        
+        scorer-names (take-nth 2 bindings)]
+    `(defn ~name [~players ~games]
+       (let [~@bindings]
+         (for [~playersymb ~players
+               :let [~@(mapcat 
+                         (fn [s] `(~s (~s ~playersymb ~games))) 
+                         scorer-names)]]
+       ~body)))))
