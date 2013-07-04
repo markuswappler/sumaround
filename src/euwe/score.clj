@@ -33,7 +33,7 @@
          (let [~@(->> scores
                    (take-while (fn [s] (not= s '&)))
                    (mapcat (fn [s] `(~s (~s ~player ~game)))))
-               ~'rec (fn [& scores#] 
+               ~name (fn [& scores#] 
                        ((apply ~name scores#) ~player ~game))]
            ~body)))))
 
@@ -41,7 +41,7 @@
   (if test
     then
     (when else
-      (apply rec else))))
+      (apply choice else))))
 
 (defmacro defbinary [name op]
   `(defoperation ~name [f# g#]
@@ -55,8 +55,8 @@
 (defbinary neq? not=)
 (defbinary lt? <)
 (defbinary gt? >)
-(defbinary add +)
-(defbinary sub -)
+(defbinary plus +)
+(defbinary minus -)
 (defbinary mult *)
 (defbinary div /)
 
@@ -71,20 +71,23 @@
   (fold + 0 score))
 
 (defmacro deftable [name [playersymb] bindings body]
+  (let [players (gensym "players")
+        games (gensym "games")
+        scorer-names (take-nth 2 bindings)]
+    `(defn ~name [~players ~games]
+       (let [~@bindings]
+         (for [~playersymb ~players
+               :let [~@(mapcat 
+                         (fn [s] `(~s (~s ~playersymb ~games))) 
+                         scorer-names)]]
+           ~body)))))
+
+(defmacro defstatistics [name bindings body]
   (let [games (gensym "games")
         scorer-names (take-nth 2 bindings)]
-    (if playersymb
-      (let [players (gensym "players")]
-        `(defn ~name [~players ~games]
-           (let [~@bindings]
-             (for [~playersymb ~players
-                   :let [~@(mapcat 
-                             (fn [s] `(~s (~s ~playersymb ~games))) 
-                             scorer-names)]]
-               ~body))))
-      `(defn ~name [~games]
-         (let [~@bindings
-               ~@(mapcat 
-                   (fn [s] `(~s (~s nil ~games))) 
-                   scorer-names)]
-           ~body)))))           
+    `(defn ~name [~games]
+       (let [~@bindings
+             ~@(mapcat
+                 (fn [s] `(~s (~s nil ~games)))
+                 scorer-names)]
+         ~body))))

@@ -26,15 +26,15 @@
    draws (sum-up (choice (eq? scored against) one))
    losses (sum-up (choice (lt? scored against) one))
    
-   cnt (add (add wins draws) losses)
+   cnt (plus (plus wins draws) losses)
    
-   points-scored (add (mult two wins) draws)
-   points-against (add (mult two losses) draws)
+   points-scored (plus (mult two wins) draws)
+   points-against (plus (mult two losses) draws)
    
    goals-scored (sum-up scored)
    goals-against (sum-up against)
    
-   goals-diff (sub goals-scored goals-against)]
+   goals-diff (minus goals-scored goals-against)]
   
   [team cnt wins draws losses points-scored points-against 
    goals-scored goals-against goals-diff])
