@@ -95,12 +95,14 @@
   [white-wins (sum-up (choice white-win? one))
    draws (sum-up (choice draw? one))
    black-wins (sum-up (choice black-win? one))
+   cnt (sum-up one)
    white-success (mult (always 100)  
                        (div 
                          (plus white-wins (mult half draws))               
-                         (plus (plus white-wins draws) black-wins)))]
+                         cnt))]
   (let [round (fn [x] (/ (num/round (* 10 x)) 10))]
-    {:1 white-wins 
+    {:all cnt
+     :1 white-wins 
      := draws 
      :0 black-wins 
      :% (double (round white-success))}))
@@ -119,7 +121,8 @@
          (table players games))))
 
 (deftest test-statistics
-  (is (= {:1 20 
+  (is (= {:all 45
+          :1 20 
           := 13 
           :0 12
           :% 58.9}
