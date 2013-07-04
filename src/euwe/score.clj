@@ -23,6 +23,14 @@
   (fn [player game]
     (= player (f game))))
 
+(defn look-up [table player-fn score-fn]
+  (fn [player game]
+    (->> table
+      (some (fn [row] 
+              (when (= player (player-fn row)) 
+                row)))
+      score-fn)))
+
 ;; combinators
 
 (defmacro defoperation [name scores body]
@@ -60,6 +68,10 @@
 (defbinary mult *)
 (defbinary div /)
 
+(defn player-> [pred score]
+  (fn [player game]
+    (score (pred player game) game)))
+
 (defn fold [f init score]
   (fn [player games]
     (->> games
@@ -70,12 +82,17 @@
 (defn sum-up [score]
   (fold + 0 score))
 
-(defmacro deftable [name [playersymb] bindings body]
+;; execution
+
+(defmacro deftable [name [playersymb & depend-tables] bindings body]
   (let [players (gensym "players")
         games (gensym "games")
         scorer-names (take-nth 2 bindings)]
     `(defn ~name [~players ~games]
-       (let [~@bindings]
+       (let [~@(mapcat 
+                 (fn [t] `(~t (~t ~players ~games))) 
+                 depend-tables)
+             ~@bindings]
          (for [~playersymb ~players
                :let [~@(mapcat 
                          (fn [s] `(~s (~s ~playersymb ~games))) 

@@ -4,6 +4,10 @@
   (:require [clojure.math.numeric-tower :as num]))
 
 ;; 11th Hastings Christmas Chess Festival 1930/31
+;; points = 1 for win, 0.5 for draw; 0 for loss
+;; soberg (sonneborn-berger) = total points of opponent for win,
+;;                             half of the total points of opponent for draw,
+;;                             0 for loss                           
 
 (def players ["Euwe" "Capablanca" "Sultan Khan" "Michell" "Yates"
               "Thomas" "Winter" "Tylor" "Menchik" "Colle"])
@@ -65,17 +69,27 @@
 (def white-win? (choice (eq? (game-score :result) (always :1)) yes))
 (def draw? (choice (eq? (game-score :result) (always :=)) yes))
 (def black-win? (choice (eq? (game-score :result) (always :0)) yes))
+(def game-points (choice
+                   (player? :white) (choice white-win? one
+                                            draw? half
+                                            black-win? zero)
+                   (player? :black) (choice white-win? zero
+                                            draw? half
+                                            black-win? one)))
+(def opponent (choice
+                (player? :white) (game-score :black)
+                (player? :black) (game-score :white)))
 
-(deftable table [player]
-  [points (sum-up
-            (choice
-              (player? :white) (choice white-win? one
-                                       draw? half
-                                       black-win? zero)
-              (player? :black) (choice white-win? zero
-                                       draw? half
-                                       black-win? one)))]
+(deftable points-table [player]
+  [points (sum-up game-points)]
   [player (double points)])
+
+(deftable table [player points-table]
+  [points (look-up points-table first second)
+   soberg (sum-up (mult 
+                    game-points 
+                    (player-> opponent points)))]
+  [player points soberg])
 
 (defstatistics statistics
   [white-wins (sum-up (choice white-win? one))
@@ -92,16 +106,16 @@
      :% (double (round white-success))}))
 
 (deftest test-table
-  (is (= [["Euwe" 7.0] 
-          ["Capablanca" 6.5]
-          ["Sultan Khan" 6.0]
-          ["Michell" 5.0]
-          ["Yates" 4.5]
-          ["Thomas" 4.0]
-          ["Winter" 3.5]
-          ["Tylor" 3.0]
-          ["Menchik" 3.0]
-          ["Colle" 2.5]]
+  (is (= [["Euwe" 7.0 29.75] 
+          ["Capablanca" 6.5 24.5]
+          ["Sultan Khan" 6.0 24.75]
+          ["Michell" 5.0 19.0]
+          ["Yates" 4.5 16.25]
+          ["Thomas" 4.0 15.75]
+          ["Winter" 3.5 14.25]
+          ["Tylor" 3.0 12.5]
+          ["Menchik" 3.0 14.75]
+          ["Colle" 2.5 8.5]]
          (table players games))))
 
 (deftest test-statistics
