@@ -102,7 +102,7 @@
           white-success (mult 
                           (always 100)  
                           (div 
-                            (plus white-wins (mult half draws))               
+                            (plus white-wins (mult half draws))
                             cnt))]
   :yield (let [round (fn [x] (/ (num/round (* 10 x)) 10))]
            {:all cnt
