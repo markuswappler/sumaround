@@ -80,32 +80,36 @@
                 (player? :white) (game-score :black)
                 (player? :black) (game-score :white)))
 
-(deftable points-table [player]
-  [points (sum-up game-points)]
-  [player (double points)])
+(deftable points-table
+  :player player
+  :score [points (sum game-points)]
+  :yield [player (double points)])
 
-(deftable table [player points-table]
-  [points (look-up points-table first second)
-   soberg (sum-up (mult 
-                    game-points 
-                    (player-> opponent points)))]
-  [player points soberg])
+(deftable table
+  :depend points-table
+  :player player
+  :score [points (lookup points-table first second)
+          soberg (sum (mult 
+                        game-points 
+                        (player-> opponent points)))]
+  :yield [player points soberg])
 
-(defstatistics statistics
-  [white-wins (sum-up (choice white-win? one))
-   draws (sum-up (choice draw? one))
-   black-wins (sum-up (choice black-win? one))
-   cnt (sum-up one)
-   white-success (mult (always 100)  
-                       (div 
-                         (plus white-wins (mult half draws))               
-                         cnt))]
-  (let [round (fn [x] (/ (num/round (* 10 x)) 10))]
-    {:all cnt
-     :1 white-wins 
-     := draws 
-     :0 black-wins 
-     :% (double (round white-success))}))
+(deftable statistics
+  :score [white-wins (sum (choice white-win? one))
+          draws (sum (choice draw? one))
+          black-wins (sum (choice black-win? one))
+          cnt (sum one)
+          white-success (mult 
+                          (always 100)  
+                          (div 
+                            (plus white-wins (mult half draws))               
+                            cnt))]
+  :yield (let [round (fn [x] (/ (num/round (* 10 x)) 10))]
+           {:all cnt
+            :1 white-wins 
+            := draws 
+            :0 black-wins 
+            :% (double (round white-success))}))
 
 (deftest test-table
   (is (= [["Euwe" 7.0 29.75] 

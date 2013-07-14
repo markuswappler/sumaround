@@ -23,7 +23,7 @@
   (fn [player game]
     (= player (f game))))
 
-(defn look-up [table player-fn score-fn]
+(defn lookup [table player-fn score-fn]
   (fn [player game]
     (->> table
       (some (fn [row] 
@@ -79,32 +79,42 @@
       (filter (comp not nil?))
       (reduce f init))))
 
-(defn sum-up [score]
+(defn sum [score]
   (fold + 0 score))
 
 ;; execution
 
-(defmacro deftable [name [playersymb & depend-tables] bindings body]
+(defmacro deftable [name & body]
   (let [players (gensym "players")
-        games (gensym "games")
-        scorer-names (take-nth 2 bindings)]
-    `(defn ~name [~players ~games]
-       (let [~@(mapcat 
-                 (fn [t] `(~t (~t ~players ~games))) 
-                 depend-tables)
-             ~@bindings]
-         (for [~playersymb ~players
-               :let [~@(mapcat 
-                         (fn [s] `(~s (~s ~playersymb ~games))) 
-                         scorer-names)]]
-           ~body)))))
-
-(defmacro defstatistics [name bindings body]
-  (let [games (gensym "games")
-        scorer-names (take-nth 2 bindings)]
-    `(defn ~name [~games]
-       (let [~@bindings
-             ~@(mapcat
-                 (fn [s] `(~s (~s nil ~games)))
-                 scorer-names)]
-         ~body))))
+        games (gensym "games")      
+        part (fn [k] (->> body
+                       (partition 2)
+                       (filter #(= k (first %)))
+                       (map second)
+                       first))
+        depend (part :depend)
+        depend (cond
+                 (nil? depend) nil
+                 (vector? depend) depend
+                 :else (vector depend))
+        player (part :player)
+        score (part :score)
+        scr-names (take-nth 2 score)
+        yield (part :yield)]
+    (if player
+      `(defn ~name [~players ~games]
+         (let [~@(mapcat
+                   (fn [d] `(~d (~d ~players ~games))) 
+                   depend)
+               ~@score]
+           (for [~player ~players
+                 :let [~@(mapcat 
+                           (fn [s] `(~s (~s ~player ~games))) 
+                           scr-names)]]
+             ~yield)))
+      `(defn ~name [~games]
+         (let [~@score
+               ~@(mapcat
+                   (fn [s] `(~s (~s nil ~games)))
+                   scr-names)]
+           ~yield)))))

@@ -13,31 +13,25 @@
             {:home "ger" :away "col" :home-goals 1 :away-goals 1}
             {:home "yug" :away "uae" :home-goals 4 :away-goals 1}])
 
-(deftable table [team]
-  [scored (choice
-            (player? :home) (game-score :home-goals)
-            (player? :away) (game-score :away-goals))
-
-   against (choice
-             (player? :home) (game-score :away-goals)
-             (player? :away) (game-score :home-goals))
-   
-   wins (sum-up (choice (gt? scored against) one))
-   draws (sum-up (choice (eq? scored against) one))
-   losses (sum-up (choice (lt? scored against) one))
-   
-   cnt (plus (plus wins draws) losses)
-   
-   points-scored (plus (mult two wins) draws)
-   points-against (plus (mult two losses) draws)
-   
-   goals-scored (sum-up scored)
-   goals-against (sum-up against)
-   
-   goals-diff (minus goals-scored goals-against)]
-  
-  [team cnt wins draws losses points-scored points-against 
-   goals-scored goals-against goals-diff])
+(deftable table
+  :player team
+  :score [scored (choice
+                   (player? :home) (game-score :home-goals)
+                   (player? :away) (game-score :away-goals))          
+          against (choice
+                    (player? :home) (game-score :away-goals)
+                    (player? :away) (game-score :home-goals))          
+          wins (sum (choice (gt? scored against) one))
+          draws (sum (choice (eq? scored against) one))
+          losses (sum (choice (lt? scored against) one))          
+          cnt (plus (plus wins draws) losses)          
+          points-scored (plus (mult two wins) draws)
+          points-against (plus (mult two losses) draws)   
+          goals-scored (sum scored)
+          goals-against (sum against)   
+          goals-diff (minus goals-scored goals-against)]  
+  :yield [team cnt wins draws losses points-scored points-against 
+          goals-scored goals-against goals-diff])
 
 (deftest test-table
   (is (= [["ger" 3 2 1 0 5 1 10 3 7]
