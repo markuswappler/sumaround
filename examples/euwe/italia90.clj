@@ -29,7 +29,7 @@
           points-against (plus (mult two losses) draws)   
           goals-scored (sum scored)
           goals-against (sum against)   
-          goals-diff (minus goals-scored goals-against)]  
+          goals-diff (minus goals-scored goals-against)]
   :yield [team cnt wins draws losses points-scored points-against 
           goals-scored goals-against goals-diff])
 

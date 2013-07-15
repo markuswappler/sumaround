@@ -83,49 +83,51 @@
 (deftable points-table
   :player player
   :score [points (sum game-points)]
-  :yield [player (double points)])
+  :yield {:name player 
+          :points (double points)})
 
 (deftable table
   :depend points-table
   :player player
-  :score [points (lookup points-table first second)
+  :score [points (lookup points-table :name :points)
           soberg (sum (mult 
                         game-points 
                         (player-> opponent points)))]
-  :yield [player points soberg])
+  :yield {:name player 
+          :points points 
+          :soberg soberg})
 
 (deftable statistics
   :score [white-wins (sum (choice white-win? one))
           draws (sum (choice draw? one))
           black-wins (sum (choice black-win? one))
-          cnt (sum one)
-          white-success (mult 
-                          (always 100)  
-                          (div 
-                            (plus white-wins (mult half draws))
-                            cnt))]
+          total (sum one)]
   :yield (let [round (fn [x] (/ (num/round (* 10 x)) 10))]
-           {:all cnt
+           {:total total
             :1 white-wins 
             := draws 
             :0 black-wins 
-            :% (double (round white-success))}))
+            :% (double (round (* 100 
+                                 (/ (+ white-wins (* 0.5 draws)) 
+                                    total))))}))
 
 (deftest test-table
-  (is (= [["Euwe" 7.0 29.75] 
-          ["Capablanca" 6.5 24.5]
-          ["Sultan Khan" 6.0 24.75]
-          ["Michell" 5.0 19.0]
-          ["Yates" 4.5 16.25]
-          ["Thomas" 4.0 15.75]
-          ["Winter" 3.5 14.25]
-          ["Tylor" 3.0 12.5]
-          ["Menchik" 3.0 14.75]
-          ["Colle" 2.5 8.5]]
-         (table players games))))
+  (is (= ["Euwe" 7.0 29.75
+          "Capablanca" 6.5 24.5
+          "Sultan Khan" 6.0 24.75
+          "Michell" 5.0 19.0
+          "Yates" 4.5 16.25
+          "Thomas" 4.0 15.75
+          "Winter" 3.5 14.25
+          "Tylor" 3.0 12.5
+          "Menchik" 3.0 14.75
+          "Colle" 2.5 8.5]
+         (mapcat 
+           (fn [row] [(row :name) (row :points) (row :soberg)])
+           (table players games)))))
 
 (deftest test-statistics
-  (is (= {:all 45
+  (is (= {:total 45
           :1 20 
           := 13 
           :0 12

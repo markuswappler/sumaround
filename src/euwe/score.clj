@@ -3,8 +3,7 @@
 ;; primitives
 
 (defn always [x]
-  (fn [player game]
-    x))
+  (fn [player game] x))
 
 (def yes (always true))
 (def no (always false))
@@ -16,7 +15,7 @@
 (def half (always 1/2))
 
 (defn game-score [f]
-  (fn [player game]
+  (fn [player game] 
     (f game)))
 
 (defn player? [f]
@@ -86,35 +85,28 @@
 
 (defmacro deftable [name & body]
   (let [players (gensym "players")
-        games (gensym "games")      
-        part (fn [k] (->> body
-                       (partition 2)
-                       (filter #(= k (first %)))
-                       (map second)
-                       first))
-        depend (part :depend)
-        depend (cond
-                 (nil? depend) nil
-                 (vector? depend) depend
-                 :else (vector depend))
-        player (part :player)
-        score (part :score)
-        scr-names (take-nth 2 score)
-        yield (part :yield)]
-    (if player
+        games (gensym "games")
+        parts (update-in 
+                (apply hash-map body)
+                [:depend]
+                (fn [d] (cond 
+                          (nil? d) nil
+                          (vector? d) d 
+                          :else (vector d))))]
+    (if (parts :player)
       `(defn ~name [~players ~games]
          (let [~@(mapcat
                    (fn [d] `(~d (~d ~players ~games))) 
-                   depend)
-               ~@score]
-           (for [~player ~players
+                   (parts :depend))
+               ~@(parts :score)]
+           (for [~(parts :player) ~players
                  :let [~@(mapcat 
-                           (fn [s] `(~s (~s ~player ~games))) 
-                           scr-names)]]
-             ~yield)))
+                           (fn [s] `(~s (~s ~(parts :player) ~games))) 
+                           (take-nth 2 (parts :score)))]]
+             ~(parts :yield))))
       `(defn ~name [~games]
-         (let [~@score
+         (let [~@(parts :score)
                ~@(mapcat
                    (fn [s] `(~s (~s nil ~games)))
-                   scr-names)]
-           ~yield)))))
+                   (take-nth 2 (parts :score)))]
+           ~(parts :yield))))))
