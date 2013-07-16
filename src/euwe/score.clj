@@ -67,9 +67,9 @@
 (defbinary mult *)
 (defbinary div /)
 
-(defn player-> [pred score]
+(defn player-> [player-scr score]
   (fn [player game]
-    (score (pred player game) game)))
+    (score (player-scr player game) game)))
 
 (defn fold [f init score]
   (fn [player games]
@@ -83,27 +83,37 @@
 
 ;; execution
 
+(defn map-comparer [& comps]
+  (fn [coll-1 coll-2]
+    (->> (map (fn [comp x y] (.compare comp x y)) comps coll-1 coll-2)
+      (drop-while zero?)
+      first
+      (#(if (nil? %) 0 %)))))
+
 (defmacro deftable [name & body]
   (let [players (gensym "players")
         games (gensym "games")
-        parts (update-in 
-                (apply hash-map body)
-                [:depend]
-                (fn [d] (cond 
-                          (nil? d) nil
-                          (vector? d) d 
-                          :else (vector d))))]
+        parts (-> (apply hash-map body)
+                (update-in [:depend]
+                           (fn [d] (cond
+                                     (nil? d) nil
+                                     (vector? d) d
+                                     :else (vector d)))))]
     (if (parts :player)
       `(defn ~name [~players ~games]
          (let [~@(mapcat
                    (fn [d] `(~d (~d ~players ~games))) 
                    (parts :depend))
-               ~@(parts :score)]
-           (for [~(parts :player) ~players
-                 :let [~@(mapcat 
-                           (fn [s] `(~s (~s ~(parts :player) ~games))) 
-                           (take-nth 2 (parts :score)))]]
-             ~(parts :yield))))
+               ~@(parts :score)
+               comp# (map-comparer ~@(take-nth 2 (rest (parts :sort))))]
+           (->> (for [~(parts :player) ~players
+                      :let [~@(mapcat 
+                                (fn [s] `(~s (~s ~(parts :player) ~games))) 
+                                (take-nth 2 (parts :score)))]]
+                  {:yield ~(parts :yield)
+                   :sort [~@(take-nth 2 (parts :sort))]})
+             (sort-by :sort comp#)
+             (map :yield))))
       `(defn ~name [~games]
          (let [~@(parts :score)
                ~@(mapcat

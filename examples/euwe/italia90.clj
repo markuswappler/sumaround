@@ -4,7 +4,7 @@
 
 ;; data from 1990 FIFA world cup, group D
 
-(def teams ["ger" "yug" "col" "uae"])
+(def teams ["col" "ger" "uae" "yug"])
   
 (def games [{:home "uae" :away "col" :home-goals 0 :away-goals 2}            
             {:home "ger" :away "yug" :home-goals 4 :away-goals 1}
@@ -31,7 +31,11 @@
           goals-against (sum against)   
           goals-diff (minus goals-scored goals-against)]
   :yield [team cnt wins draws losses points-scored points-against 
-          goals-scored goals-against goals-diff])
+          goals-scored goals-against goals-diff]
+  :sort [points-scored >
+         points-against <
+         goals-diff >
+         goals-scored >])
 
 (deftest test-table
   (is (= [["ger" 3 2 1 0 5 1 10 3 7]

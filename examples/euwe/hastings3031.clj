@@ -9,8 +9,16 @@
 ;;                             half of the total points of opponent for draw,
 ;;                             0 for loss                           
 
-(def players ["Euwe" "Capablanca" "Sultan Khan" "Michell" "Yates"
-              "Thomas" "Winter" "Tylor" "Menchik" "Colle"])
+(def players ["Capablanca"
+              "Colle"
+              "Euwe"  
+              "Menchik" 
+              "Michell" 
+              "Sultan Khan"
+              "Thomas"               
+              "Tylor"              
+              "Winter"
+              "Yates"])
 
 (def games [{:white "Capablanca" :black "Colle" :result :1}
             {:white "Menchik" :black "Yates" :result :=}
@@ -95,7 +103,9 @@
                         (player-> opponent points)))]
   :yield {:name player 
           :points points 
-          :soberg soberg})
+          :soberg soberg}
+  :sort [points >
+         soberg >])
 
 (deftable statistics
   :score [white-wins (sum (choice white-win? one))
@@ -119,8 +129,8 @@
           "Yates" 4.5 16.25
           "Thomas" 4.0 15.75
           "Winter" 3.5 14.25
-          "Tylor" 3.0 12.5
           "Menchik" 3.0 14.75
+          "Tylor" 3.0 12.5          
           "Colle" 2.5 8.5]
          (mapcat 
            (fn [row] [(row :name) (row :points) (row :soberg)])
