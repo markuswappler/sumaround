@@ -19,6 +19,7 @@ and former world chess champion.
 ## To do
 * Tests for euwe.score
 * Support for sorting via game against each other
+* Documentation
 
 ## License
 
