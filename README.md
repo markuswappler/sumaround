@@ -17,8 +17,8 @@ and former world chess champion.
 [euwe]: http://en.wikipedia.org/wiki/Max_Euwe "Wikipedia"
 
 ## To do
-* Testing for euwe.score
-* Support for sorting via game against eachother
+* Tests for euwe.score
+* Support for sorting via game against each other
 
 ## License
 
