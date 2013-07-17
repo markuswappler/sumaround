@@ -107,6 +107,14 @@
   :sort [points >
          soberg >])
 
+(deftable alphabetic
+  :sort [player compare]
+  :depend [table points-table]
+  :player player
+  :score [points (lookup points-table :name :points)
+          soberg (lookup table :name :soberg)]
+  :yield [points soberg])  
+
 (deftable statistics
   :score [white-wins (sum (choice white-win? one))
           draws (sum (choice draw? one))
@@ -135,6 +143,19 @@
          (mapcat 
            (fn [row] [(row :name) (row :points) (row :soberg)])
            (table players games)))))
+
+(deftest test-alphabetic
+  (is (= [6.5 24.5   ; Capablanca
+          2.5 8.5    ; Colle
+          7.0 29.75  ; Euwe
+          3.0 14.75  ; Menchik
+          5.0 19.0   ; Michell
+          6.0 24.75  ; Sultan Khan
+          4.0 15.75  ; Thomas
+          3.0 12.5   ; Tylor
+          3.5 14.25  ; Winter
+          4.5 16.25] ; Yates
+         (apply concat (alphabetic players games)))))
 
 (deftest test-statistics
   (is (= {:total 45
